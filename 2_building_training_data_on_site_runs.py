@@ -1,13 +1,27 @@
 # -*- coding: utf-8 -*-
 """
-Created on %(date)s
-@author: bav@geus.dk
+Water Depth and Brightness Temperature Analysis for Greenland AWS Sites
 
-tip list:
-    %matplotlib inline
-    %matplotlib qt
-    import pdb; pdb.set_trace()
+This script loads SMRT simulation outputs and GEUS snow model outputs for a set
+of AWS sites on the Greenland ice sheet. It computes frequency ratios, derives
+dry-season averages, resamples snow model data to fixed depths, and extracts 
+the upper depth of liquid water.
+
+The results are merged into a unified dataframe per site and saved for further
+analysis and visualization. Optionally, diagnostic plots of modeled TB and water
+depths are generated.
+
+Author: Baptiste Vandecrux  
+Contact: bav@geus.dk  
+License: CC-BY 4.0 (https://creativecommons.org/licenses/by/4.0/)  
+Please cite:  
+Vandecrux, B., Picard, G., Zeiger, P., Leduc-Leballeur, M., Colliander, A.,  
+Hossan, A., & Ahlstrøm, A. (submitted). Estimating the depth of subsurface  
+water on the Greenland Ice Sheet using multi-frequency passive microwave  
+remote sensing, radiative transfer modeling, and machine learning.  
+*Remote Sensing of Environment*.
 """
+
 import xarray as xr
 import numpy as np
 import pandas as pd
