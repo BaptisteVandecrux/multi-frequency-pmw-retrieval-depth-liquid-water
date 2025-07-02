@@ -1,3 +1,30 @@
+# -*- coding: utf-8 -*-
+"""
+SMRT Simulation and Optimization Script for Greenland AWS Sites
+
+This script runs the Snow Microwave Radiative Transfer (SMRT) model at multiple 
+automatic weather station (AWS) sites on the Greenland ice sheet. It uses output 
+from the GEUS snow model and passive microwave observations to simulate 
+brightness temperatures (TB) at four frequencies: 1.4, 6.9, 10.7, and 18.7 GHz.
+
+The model is optimized at each site and for each year by tuning:
+- The number of inserted pure ice layers to match 1.4 GHz observations
+- A grain size scaling factor to match higher-frequency observations
+
+The script processes each site-year:
+- Selects the typical winter profile (Feb/March or site-specific)
+- Optimizes parameters if requested
+- Runs SMRT simulation over the year using resampled snow profiles
+- Stores results in compressed NetCDF files
+
+Parallel processing is used to assign sites to specific CPU cores for efficiency.
+
+Author: Baptiste Vandecrux
+Contact: bav@geus.dk
+License: CC-BY 4.0 (https://creativecommons.org/licenses/by/4.0/)
+Please cite: Vandecrux, B., Picard, G., Zeiger, P., Leduc-Leballeur, M., Colliander, A., Hossan, A., & Ahlstrøm, A. (submitted). Estimating the depth of subsurface water on the Greenland Ice Sheet using multi-frequency passive microwave remote sensing, radiative transfer modeling, and machine learning. Remote Sensing of Environment.
+"""
+
 import numpy as np
 import xarray as xr
 import multiprocessing

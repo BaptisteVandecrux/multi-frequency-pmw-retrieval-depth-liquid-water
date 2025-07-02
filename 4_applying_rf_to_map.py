@@ -1,13 +1,29 @@
 # -*- coding: utf-8 -*-
 """
-Created on %(date)s
-@author: bav@geus.dk
+Gridded DLW Prediction using Trained Random Forest Ensemble
 
-tip list:
-    %matplotlib inline
-    %matplotlib qt
-    import pdb; pdb.set_trace()
+This script applies an ensemble of trained Random Forest models to preprocessed 
+passive microwave brightness temperature data (SMOS/AMSR) across the Greenland 
+ice sheet to estimate the depth of subsurface liquid water (DLW). It performs 
+per-pixel inference in parallel using multiprocessing and writes yearly gridded 
+outputs of mean and standard deviation.
+
+Workflow includes:
+- Loading preprocessed PMW features for each year
+- Parallel batch prediction using all trained models (2010–2023)
+- Outputting NetCDF files with compressed encoded predictions
+
+Author: Baptiste Vandecrux  
+Contact: bav@geus.dk  
+License: CC-BY 4.0 (https://creativecommons.org/licenses/by/4.0/)  
+Please cite:  
+Vandecrux, B., Picard, G., Zeiger, P., Leduc-Leballeur, M., Colliander, A.,  
+Hossan, A., & Ahlstrøm, A. (submitted). Estimating the depth of subsurface  
+water on the Greenland Ice Sheet using multi-frequency passive microwave  
+remote sensing, radiative transfer modeling, and machine learning.  
+*Remote Sensing of Environment*.
 """
+
 import xarray as xr
 import pandas as pd
 import numpy as np

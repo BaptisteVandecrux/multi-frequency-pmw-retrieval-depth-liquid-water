@@ -1,13 +1,30 @@
 # -*- coding: utf-8 -*-
 """
-Created on %(date)s
-@author: bav@geus.dk
+Visualization and Analysis of Predicted Subsurface Water Depth over Greenland
 
-tip list:
-    %matplotlib inline
-    %matplotlib qt
-    import pdb; pdb.set_trace()
+This script visualizes and analyzes the spatial and temporal patterns of 
+subsurface liquid water (DLW) predicted by a trained Random Forest model applied 
+to satellite brightness temperature observations over the Greenland ice sheet.
+
+It includes:
+- Extracting DLW time series at specific AWS sites
+- Creating maps of DLW mean and uncertainty for selected dates and years
+- Mapping the number of days with water depth > 1 m
+- Comparing uncertainty vs. depth
+- Transect-based visualization
+- Generating animated GIFs of DLW evolution
+
+Author: Baptiste Vandecrux  
+Contact: bav@geus.dk  
+License: CC-BY 4.0 (https://creativecommons.org/licenses/by/4.0/)  
+Please cite:  
+Vandecrux, B., Picard, G., Zeiger, P., Leduc-Leballeur, M., Colliander, A.,  
+Hossan, A., & Ahlstrøm, A. (submitted). Estimating the depth of subsurface  
+water on the Greenland Ice Sheet using multi-frequency passive microwave  
+remote sensing, radiative transfer modeling, and machine learning.  
+*Remote Sensing of Environment*.
 """
+
 import xarray as xr
 import pandas as pd
 import numpy as np

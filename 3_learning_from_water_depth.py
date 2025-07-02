@@ -1,13 +1,31 @@
 # -*- coding: utf-8 -*-
 """
-Created on %(date)s
-@author: bav@geus.dk
+Depth of Liquid Water Prediction using Random Forest Regression
 
-tip list:
-    %matplotlib inline
-    %matplotlib qt
-    import pdb; pdb.set_trace()
+This script trains and applies a Random Forest regression model to predict the 
+depth of subsurface liquid water (DLW) on the Greenland ice sheet using SMRT 
+simulated brightness temperatures and normalized features. It performs leave-one-year-out
+cross-validation and saves one model per test year. It also provides inference of
+mean and standard deviation of DLW on new time series.
+
+The workflow includes:
+- Preprocessing and normalization of multi-frequency TB
+- Weighting of training samples to balance depth classes
+- Model training and evaluation per year
+- Application to new PMW time series data
+- Visualization of predictions alongside brightness temperature observations
+
+Author: Baptiste Vandecrux  
+Contact: bav@geus.dk  
+License: CC-BY 4.0 (https://creativecommons.org/licenses/by/4.0/)  
+Please cite:  
+Vandecrux, B., Picard, G., Zeiger, P., Leduc-Leballeur, M., Colliander, A.,  
+Hossan, A., & Ahlstrøm, A. (submitted). Estimating the depth of subsurface  
+water on the Greenland Ice Sheet using multi-frequency passive microwave  
+remote sensing, radiative transfer modeling, and machine learning.  
+*Remote Sensing of Environment*.
 """
+
 import pandas as pd
 from sklearn.multioutput import MultiOutputRegressor
 from sklearn.ensemble import RandomForestRegressor
