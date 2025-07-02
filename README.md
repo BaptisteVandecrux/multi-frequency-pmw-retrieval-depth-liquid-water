@@ -1,5 +1,17 @@
 # Estimating the Depth of Subsurface Liquid Water on the Greenland Ice Sheet
 
+<p align="center">
+  <span style="display:inline-flex; align-items:center; height:120px;">
+    <img src="https://upload.wikimedia.org/wikipedia/commons/thumb/a/af/ESA_logo.png/330px-ESA_logo.png" alt="ESA" height="55"/>
+  </span>
+  <span style="display:inline-flex; align-items:center; height:120px; margin: 0 20px;">
+    <img src="https://encrypted-tbn0.gstatic.com/images?q=tbn:ANd9GcSZwPTj_X0dIN8FSEQnsLUbwacJzAZgRkAIeKnUXYsZYSE0RrAo5spEoFvToIdHrwE7Azo&usqp=CAU" alt="CCI" height="60"/>
+  </span>
+  <span style="display:inline-flex; align-items:center; height:120px;">
+    <img src="https://github.com/SUMup-database/.github/blob/main/profile/doc/misc/Promice_GC-Net_colour.jpg?raw=true" alt="PROMICE/GC-Net" height="100"/>
+  </span>
+</p>
+
 Multi-frequency passive microwave emissions from the Greenland Ice Sheet are known to be sensitive to the presence of liquid water at different depths. Here we derive the upper depth of the wet layer on the ice sheet—henceforth referred to as the depth of liquid water (DLW)—from brightness temperature (BT) observations at 1.4, 6.9, 10.7, and 18.7 GHz from the Soil Moisture and Ocean Salinity (SMOS) satellite and Advanced Microwave Scanning Radiometers (AMSR-E, AMSR2), combined with snow and radiative transfer modeling and machine learning.
 
 First, to understand the response of multi-frequency TB to the presence of liquid water in the snow, we build the following simulation catalogue. The GEUS snow model (Vandecrux et al., [2018](https://doi.org/10.1029/2017JF004597), [2020a](https://doi.org/10.1017/jog.2020.30), [2020b](https://doi.org/10.5194/tc-14-3785-2020)) was run at 19 sites in the accumulation area of the Greenland Ice Sheet using the Copernicus Arctic Regional Reanalysis (CARRA) as forcing. The Snow Microwave Radiative Transfer (SMRT) model from [Picard et al. (2018)](https://doi.org/10.5194/gmd-11-2763-2018) calculated the daily (6 AM) brightness temperature (TB) at four frequencies using as input the simulated profiles of snow temperature, density, and grain size from the GEUS snow model. The coupling between these two models was optimized through the adjustment of two parameters for each site and each year. First, the number of pure ice layers to be considered in the SMRT input—based on the ice content simulated by the GEUS snow model—was optimized to maximize the match between observed and simulated winter vertically polarized TB at 1.4 GHz. Then, a multiplicative correction factor applied to the GEUS snow model's simulated grain diameter was also optimized each year and at each site to maximize the match between observed and simulated vertically polarized TB at 6.9, 10.7, and 18.7 GHz.
