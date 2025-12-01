@@ -24,7 +24,6 @@ Contact: bav@geus.dk
 License: CC-BY 4.0 (https://creativecommons.org/licenses/by/4.0/)
 Please cite: Vandecrux, B., Picard, G., Zeiger, P., Leduc-Leballeur, M., Colliander, A., Hossan, A., & Ahlstrøm, A. (submitted). Estimating the depth of subsurface water on the Greenland Ice Sheet using multi-frequency passive microwave remote sensing, radiative transfer modeling, and machine learning. Remote Sensing of Environment.
 """
-
 import numpy as np
 import xarray as xr
 import multiprocessing

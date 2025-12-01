@@ -20,7 +20,7 @@ Then we train an ensemble of 14 random forest (RF) models on this simulation cat
 
 Please refer to, and cite:
 
-Vandecrux, B., Picard, G., Zeiger, P., Leduc-Leballeur, M., Colliander, A., Hossan, A., & Ahlstrøm, A. (submitted). *Estimating the depth of subsurface water on the Greenland Ice Sheet using multi-frequency passive microwave remote sensing, radiative transfer modeling, and machine learning*. Remote Sensing of Environment.
+Vandecrux, B., Picard, G., Zeiger, P., Leduc-Leballeur, M., Colliander, A., Hossan, A., & Ahlstrøm, A.. *Estimating the depth of subsurface water on the Greenland Ice Sheet using multi-frequency passive microwave remote sensing, radiative transfer modeling, and machine learning*. Remote Sensing of Environment.
 
 This dataset was produced under the European Space Agency Climate Change Initiative research fellowship [Water Under Snow Cover](https://climate.esa.int/en/about-us-new/fellowships/esa-cci-research-fellowship-Baptiste-Vandecrux/).
 
@@ -43,6 +43,11 @@ Applies the trained random forest models to brightness temperature grids. Uses m
 **5. `5_plotting_depth_maps.py`**  
 Visualizes DLW predictions as static maps, time series, transects, and animated GIFs. Also produces diagnostic plots and maps of prediction uncertainty and frequency of deep water occurrence.
 
+**6_merge_and_encode_output_files.py**
+Generates and encodes the UDLW output file.
+
+**lib**
+Folder with all the necessary functions
 
 ## Data Products and Dependencies
 

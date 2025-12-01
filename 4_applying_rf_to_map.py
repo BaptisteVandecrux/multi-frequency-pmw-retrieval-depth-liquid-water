@@ -2,10 +2,10 @@
 """
 Gridded DLW Prediction using Trained Random Forest Ensemble
 
-This script applies an ensemble of trained Random Forest models to preprocessed 
-passive microwave brightness temperature data (SMOS/AMSR) across the Greenland 
-ice sheet to estimate the depth of subsurface liquid water (DLW). It performs 
-per-pixel inference in parallel using multiprocessing and writes yearly gridded 
+This script applies an ensemble of trained Random Forest models to preprocessed
+passive microwave brightness temperature data (SMOS/AMSR) across the Greenland
+ice sheet to estimate the depth of subsurface liquid water (DLW). It performs
+per-pixel inference in parallel using multiprocessing and writes yearly gridded
 outputs of mean and standard deviation.
 
 Workflow includes:
@@ -13,14 +13,14 @@ Workflow includes:
 - Parallel batch prediction using all trained models (2010–2023)
 - Outputting NetCDF files with compressed encoded predictions
 
-Author: Baptiste Vandecrux  
-Contact: bav@geus.dk  
-License: CC-BY 4.0 (https://creativecommons.org/licenses/by/4.0/)  
-Please cite:  
-Vandecrux, B., Picard, G., Zeiger, P., Leduc-Leballeur, M., Colliander, A.,  
-Hossan, A., & Ahlstrøm, A. (submitted). Estimating the depth of subsurface  
-water on the Greenland Ice Sheet using multi-frequency passive microwave  
-remote sensing, radiative transfer modeling, and machine learning.  
+Author: Baptiste Vandecrux
+Contact: bav@geus.dk
+License: CC-BY 4.0 (https://creativecommons.org/licenses/by/4.0/)
+Please cite:
+Vandecrux, B., Picard, G., Zeiger, P., Leduc-Leballeur, M., Colliander, A.,
+Hossan, A., & Ahlstrøm, A. (submitted). Estimating the depth of subsurface
+water on the Greenland Ice Sheet using multi-frequency passive microwave
+remote sensing, radiative transfer modeling, and machine learning.
 *Remote Sensing of Environment*.
 """
 
@@ -34,26 +34,32 @@ from tqdm import tqdm
 
 features = ['01_V', '06_V', '10_V', '19_V',
             '01_V_norm', '06_V_norm', '10_V_norm', '19_V_norm']
-
+# %%
 read_from_scratch = False
-if read_from_scratch:
-    for year in range(2010,2024):
-        print('######', year)
-        ds_pmw = ll.load_pmw_all(year=year)
-        final_dataset = ll.prepare_ds_pmw(ds_pmw, filter=True)
-        final_dataset = final_dataset.sel(time=final_dataset.time.dt.hour == 9)
-        final_dataset['time'] = final_dataset.time.dt.floor('D')
-        ds_melt = ll.clip_firn_area(ll.load_melt_xr(year, only_smos=True))
-        ds_melt_daily = (ds_melt.snow_status_wet_dry_01V == 1).resample(time="1D").any()
-        # ds_merged = ds_merged.sel(time=slice(ds_melt_daily.time[0],ds_melt_daily.time[-1]))
+from multiprocessing import Pool
+import functools
 
-        ds_melt_daily = ds_melt_daily.sel(time=slice(final_dataset.time[0],final_dataset.time[-1]))
-        final_dataset = final_dataset.where(ds_melt_daily == 1)
-        encoding = {var: {'dtype': 'int16', 'scale_factor': 1e-4 if "_norm" in var else 0.01,
-                          'zlib': True, 'complevel': 4, '_FillValue': -32768} for var in final_dataset.data_vars}
-        final_dataset.to_netcdf(f'data/PMW grids/pre_processed/pmw_data_formatted_{year}.nc', encoding=encoding)
-# else:
-#     final_dataset = xr.read_dataset('data/PMW grids/pmw_data_formatted.nc')
+def process_year(year):
+    print('######', year)
+    ds_pmw = ll.load_pmw_all(year=year)
+    final_dataset = ll.prepare_ds_pmw(ds_pmw, filter=True)
+    final_dataset = final_dataset.sel(time=final_dataset.time.dt.hour == 9)
+    final_dataset['time'] = final_dataset.time.dt.floor('D')
+    ds_melt = ll.clip_firn_area(ll.load_melt_xr(year, only_smos=True))
+    ds_melt_daily = (ds_melt.snow_status_wet_dry_01V == 1).resample(time="1D").any()
+    ds_melt_daily = ds_melt_daily.sel(time=slice(final_dataset.time[0], final_dataset.time[-1]))
+    ds_melt_daily = ds_melt_daily.reindex(y=list(reversed(ds_melt_daily.y)))
+    final_dataset = final_dataset.where(ds_melt_daily == 1)
+    encoding = {var: {'dtype': 'int16', 'scale_factor': 1e-4 if "_norm" in var else 0.01,
+                      'zlib': True, 'complevel': 4, '_FillValue': -32768}
+                for var in final_dataset.data_vars}
+    final_dataset.to_netcdf(f'data/PMW grids/pre_processed/pmw_data_formatted_{year}.nc',
+                            encoding=encoding)
+
+if read_from_scratch:
+    with Pool(processes=6) as pool:
+        pool.map(process_year, [2012])  #range(2010, 2024))
+
 
 
 # %%
@@ -83,7 +89,18 @@ def process_batch(batch, queue, worker_id, feature_data):
             pbar.update(1)
     queue.put(results)
 
-for year in range(2010, 2024):
+def process_valid(feature_data, valid_coords, features, models):
+    results = []
+    with tqdm(total=len(valid_coords), desc="Processing valid pixels") as pbar:
+        for idx in valid_coords:
+            pixel_data = feature_data[:, idx[0], idx[1], idx[2]]
+            pixel_df = pd.DataFrame([pixel_data], columns=features)
+            df_pred = predict_mean_std(pixel_df, models)
+            results.append((tuple(idx), df_pred.depth_mean[0], df_pred.depth_std[0]))
+            pbar.update(1)
+    return results
+
+for year in [2012]: #range(2010, 2024):
     print(year)
     final_dataset = xr.open_dataset(
         f'data/PMW grids/pre_processed/pmw_data_formatted_{year}.nc'
@@ -92,11 +109,13 @@ for year in range(2010, 2024):
     # Extract feature data directly from the xarray dataset
     feature_data = final_dataset[features].to_array(dim="feature").data
 
-    coords = np.array(list(np.ndindex(final_dataset.sizes['time'], final_dataset.sizes['y'], final_dataset.sizes['x'])))
+    coords = np.array(list(np.ndindex(final_dataset.sizes['time'],
+                                      final_dataset.sizes['y'],
+                                      final_dataset.sizes['x'])))
     valid_mask = ~np.all(np.isnan(feature_data), axis=0)
     valid_coords = coords[valid_mask.ravel()]
 
-    # Split into 7 batches
+    # Split into N batches
     num_workers = 23
     batches = np.array_split(valid_coords, num_workers)
 

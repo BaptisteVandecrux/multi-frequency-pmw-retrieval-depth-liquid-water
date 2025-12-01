@@ -4,21 +4,21 @@ Water Depth and Brightness Temperature Analysis for Greenland AWS Sites
 
 This script loads SMRT simulation outputs and GEUS snow model outputs for a set
 of AWS sites on the Greenland ice sheet. It computes frequency ratios, derives
-dry-season averages, resamples snow model data to fixed depths, and extracts 
+dry-season averages, resamples snow model data to fixed depths, and extracts
 the upper depth of liquid water.
 
 The results are merged into a unified dataframe per site and saved for further
 analysis and visualization. Optionally, diagnostic plots of modeled TB and water
 depths are generated.
 
-Author: Baptiste Vandecrux  
-Contact: bav@geus.dk  
-License: CC-BY 4.0 (https://creativecommons.org/licenses/by/4.0/)  
-Please cite:  
-Vandecrux, B., Picard, G., Zeiger, P., Leduc-Leballeur, M., Colliander, A.,  
-Hossan, A., & Ahlstrøm, A. (submitted). Estimating the depth of subsurface  
-water on the Greenland Ice Sheet using multi-frequency passive microwave  
-remote sensing, radiative transfer modeling, and machine learning.  
+Author: Baptiste Vandecrux
+Contact: bav@geus.dk
+License: CC-BY 4.0 (https://creativecommons.org/licenses/by/4.0/)
+Please cite:
+Vandecrux, B., Picard, G., Zeiger, P., Leduc-Leballeur, M., Colliander, A.,
+Hossan, A., & Ahlstrøm, A. (submitted). Estimating the depth of subsurface
+water on the Greenland Ice Sheet using multi-frequency passive microwave
+remote sensing, radiative transfer modeling, and machine learning.
 *Remote Sensing of Environment*.
 """
 
@@ -29,15 +29,18 @@ import matplotlib.pyplot as plt
 import lib.load as ll
 import lib.smrt_functions as sf
 import lib.plot as lp
-import glob 
+import glob
+from tqdm import tqdm
+from joblib import Parallel, delayed
+import xarray as xr
 from tqdm import tqdm
 
 df_list=[]
 station_list = [ 'H2','H3', 'T1old','T2_09','T3', 'T4',
              'FA-13','FA-15-1','FA-15-2','SIGMA-A',
              'KAN_U', 'DYE-2','CP1', 'South Dome', 'NASA-SE',
-             'NASA-U','Saddle', 'CEN2',
-             # 'NEEM','NGRIP', 'Summit', 'Tunu-N', 'NASA-E','EastGRIP','Humboldt'
+             'NASA-U','Saddle', 'CEN2','Humboldt'
+             # 'NEEM','NGRIP', 'Summit', 'Tunu-N', 'NASA-E','EastGRIP'
              ]
 # for site in ['KAN_U','FA-13','DYE-2','CP1',]:
 for site in station_list:
@@ -82,17 +85,15 @@ for site in station_list:
     #                                     year_data[['depth','slwc']].sel(time=time).copy(),
     #                                     plot=False))
     # data_resample=xr.concat(list_da, dim='time')
-    from joblib import Parallel, delayed
-    import xarray as xr
-    from tqdm import tqdm
-    
+
+
     def process_time(t):
         return sf.resample_firn_model_output_at_fixed_depths(
             year_data[['depth', 'slwc']].sel(time=t).copy(), plot=False
         )
-    
+
     list_da = Parallel(n_jobs=-1)(delayed(process_time)(t) for t in tqdm(year_data.time.values))
-    
+
     data_resample = xr.concat(list_da, dim='time')
 
     upper_depth_df =  ll.get_upper_water_depth(data_resample)
@@ -117,6 +118,7 @@ for site in station_list:
     df_list.append(merged_df)
     plot = False
     if plot:
+        for year in range(2010,2024):
             fig, axs = plt.subplots(2, 1, sharex=True, figsize=(8, 12))
             plt.subplots_adjust(top=0.7)
             # Adjust the first subplot to leave space for the colorbar
@@ -128,13 +130,9 @@ for site in station_list:
             for freq in [ '01', '06','10','19',]:
                 if freq != '01':
                     tmp = df.resample('D').mean()
-                    axs[0].plot(tmp.index,
-                                tmp[f'{freq}_V'],marker='o',
-                                label=f'{freq}_V')
+                    axs[0].plot(tmp.index, tmp[f'{freq}_V'],marker='o', label=f'{freq}_V')
                 else:
-                    axs[0].plot(df.index,
-                                df[f'{freq}_V'],alpha=0.9,marker='o',
-                                label=f'{freq}_V')
+                    axs[0].plot(df.index, df[f'{freq}_V'],alpha=0.9,marker='o', label=f'{freq}_V')
 
             axs[0].set_title(site)
             axs[0].set_ylabel('BT (K)')
@@ -161,6 +159,7 @@ for site in station_list:
             # Final plot settings and save
             plt.show()
             fig.savefig(f'figures/water_depth_Tb_gs_and_n_ice_tuning/{site}_{year}_model_output.png', dpi=300, bbox_inches='tight')
+
 df_all = pd.concat(df_list)
 df_all[['site','latitude','longitude','T2m_avg','SF_avg', 'melt_avg' ]].drop_duplicates().to_csv('site_overview.tsv',sep='\t',index=None)
-df_all.to_csv('output/water_depth_Tb_gs_and_n_ice_tuning_after_resample.csv')
+df_all.to_csv('output/water_depth_Tb_gs_and_n_ice_tuning_after_resample_new.csv')
